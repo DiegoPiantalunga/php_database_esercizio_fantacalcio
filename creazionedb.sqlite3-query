@@ -1,13 +1,12 @@
 -- database: ./db2.sqlite
 
--- Premi il pulsante ▷ nell'angolo in alto a destra della finestra per eseguire l'intero file.
-
 CREATE TABLE IF NOT EXISTS partite (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     squadra1 TEXT NOT NULL,
     voto1 REAL NOT NULL,
     squadra2 TEXT NOT NULL,
     voto2 REAL NOT NULL,
+    punti1 INTEGER NOT NULL DEFAULT 0,
+    punti2 INTEGER NOT NULL DEFAULT 0,
     data DATE DEFAULT (date('now'))
 );
-

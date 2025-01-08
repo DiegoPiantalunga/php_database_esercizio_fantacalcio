@@ -1,35 +1,39 @@
 <?php
-
 // Connessione al database SQLite
 try {
-    $conn = new PDO('sqlite:db2.sqlite');
+    $db_path = 'db2.sqlite';  // Percorso al tuo database SQLite
+    $conn = new PDO('sqlite:' . $db_path);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Creazione della tabella se non esiste già
     $createTableQuery = "
-        CREATE TABLE IF NOT EXISTS utenti (
+        CREATE TABLE IF NOT EXISTS partite (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            cognome TEXT NOT NULL,
-            eta INTEGER NOT NULL
+            squadra1 TEXT NOT NULL,
+            voto1 REAL NOT NULL,
+            squadra2 TEXT NOT NULL,
+            voto2 REAL NOT NULL,
+            data DATE DEFAULT (date('now'))
         );
     ";
     $conn->exec($createTableQuery);
 
-    // Variabili di appoggio per l'inserimento dei dati
+    // Inserimento dei dati nel database
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $nome = isset($_POST['nome']) ? $_POST['nome'] : '';
-        $cognome = isset($_POST['cognome']) ? $_POST['cognome'] : '';
-        $eta = isset($_POST['eta']) ? (int)$_POST['eta'] : 0;
+        $squadra1 = isset($_POST['squadra1']) ? $_POST['squadra1'] : '';
+        $voto1 = isset($_POST['voto1']) ? (float)$_POST['voto1'] : 0;
+        $squadra2 = isset($_POST['squadra2']) ? $_POST['squadra2'] : '';
+        $voto2 = isset($_POST['voto2']) ? (float)$_POST['voto2'] : 0;
 
-        // Inserimento dei dati nel database
-        $stmt = $conn->prepare("INSERT INTO utenti (nome, cognome, eta) VALUES (:nome, :cognome, :eta)");
-        $stmt->bindParam(':nome', $nome, PDO::PARAM_STR);
-        $stmt->bindParam(':cognome', $cognome, PDO::PARAM_STR);
-        $stmt->bindParam(':eta', $eta, PDO::PARAM_INT);
+        // Preparazione della query per l'inserimento
+        $stmt = $conn->prepare("INSERT INTO partite (squadra1, voto1, squadra2, voto2) VALUES (:squadra1, :voto1, :squadra2, :voto2)");
+        $stmt->bindParam(':squadra1', $squadra1, PDO::PARAM_STR);
+        $stmt->bindParam(':voto1', $voto1, PDO::PARAM_STR);
+        $stmt->bindParam(':squadra2', $squadra2, PDO::PARAM_STR);
+        $stmt->bindParam(':voto2', $voto2, PDO::PARAM_STR);
 
         if ($stmt->execute()) {
-            echo "<h3>Utente salvato nel database!</h3>";
+            echo "<h3>Voti salvati con successo!</h3>";
         } else {
             echo "<h3>Errore durante il salvataggio:</h3>";
             print_r($stmt->errorInfo());
@@ -40,16 +44,57 @@ try {
 }
 ?>
 
-<h2>Inserimento dati</h2>
+<h2>Inserisci i voti della partita</h2>
 <form method="POST" action="">
-    <label for="nome">Inserisci il nome:</label>
-    <input type="text" id="nome" name="nome" required><br><br>
+    <label for="squadra1">Squadra 1:</label>
+    <input type="text" id="squadra1" name="squadra1" required><br><br>
 
-    <label for="cognome">Inserisci il cognome:</label>
-    <input type="text" id="cognome" name="cognome" required><br><br>
+    <label for="voto1">Voto Squadra 1:</label>
+    <input type="number" id="voto1" name="voto1" step="0.1" required><br><br>
 
-    <label for="eta">Inserisci l'età:</label>
-    <input type="number" id="eta" name="eta" required><br><br>
+    <label for="squadra2">Squadra 2:</label>
+    <input type="text" id="squadra2" name="squadra2" required><br><br>
+
+    <label for="voto2">Voto Squadra 2:</label>
+    <input type="number" id="voto2" name="voto2" step="0.1" required><br><br>
 
     <input type="submit" value="Salva">
 </form>
+
+<h2>Partite salvate</h2>
+<?php
+try {
+    // Connessione al database per visualizzare i dati salvati
+    $conn = new PDO('sqlite:db2.sqlite');
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $stmt = $conn->prepare("SELECT * FROM partite ORDER BY data DESC");
+    $stmt->execute();
+    $partite = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (count($partite) > 0):
+?>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Squadra 1</th>
+            <th>Voto Squadra 1</th>
+            <th>Squadra 2</th>
+            <th>Voto Squadra 2</th>
+            <th>Data</th>
+        </tr>
+        <?php foreach ($partite as $partita): ?>
+            <tr>
+                <td><?= $partita['id'] ?></td>
+                <td><?= $partita['squadra1'] ?></td>
+                <td><?= $partita['voto1'] ?></td>
+                <td><?= $partita['squadra2'] ?></td>
+                <td><?= $partita['voto2'] ?></td>
+                <td><?= $partita['data'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+<?php else: ?>
+    <p>Non ci sono partite salvate.</p>
+<?php endif; ?>
+?>

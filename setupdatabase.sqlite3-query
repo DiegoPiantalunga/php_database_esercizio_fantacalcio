@@ -1,0 +1,11 @@
+-- database: ./db2.sqlite
+
+-- Premi il pulsante ▷ nell'angolo in alto a destra della finestra per eseguire l'intero file.
+
+CREATE TABLE IF NOT EXISTS utenti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    cognome TEXT NOT NULL,
+    eta INTEGER NOT NULL
+);
+

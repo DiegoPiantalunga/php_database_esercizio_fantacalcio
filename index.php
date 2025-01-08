@@ -91,6 +91,8 @@ try {
 <head>
     <meta charset="UTF-8">
     <title>Gestione Partite</title>
+    <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 
